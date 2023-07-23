@@ -21,3 +21,5 @@
 ```
 ConverterHTML.exe \\server\HTML
 ```
+## Просмотр данных
+Откройте index.htm из папки HTML через любой браузер
