@@ -36,7 +36,7 @@ namespace ConverterHTML
                 }
             }
 
-            string[] files = Directory.GetFiles(path);
+            string[] files = Directory.GetFiles(Path.Combine(path, "InputFiles"));
 
             progressBar1.Maximum = files.Length;
 
