@@ -18,6 +18,8 @@ namespace ConverterHTML
 {
     public partial class Converter : Form
     {
+        string path = "";
+
         public Converter()
         {
             InitializeComponent();
@@ -25,7 +27,7 @@ namespace ConverterHTML
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            string path = Program.path != "" ? Program.path : "";
+            path = Program.path != "" ? Program.path : "";
 
             if (path == "")
             {
@@ -57,7 +59,7 @@ namespace ConverterHTML
                     string json = File.ReadAllText(file);
                     General comp = JsonConvert.DeserializeObject<General>(json);
 
-                    Directory.CreateDirectory("html");
+                    Directory.CreateDirectory(Path.Combine(path, "html"));
 
                     //Convert values
                     comp.RAMArray.MaxCapacity = comp.RAMArray.MaxCapacity / 1024 / 1024;
@@ -66,7 +68,7 @@ namespace ConverterHTML
                     //Convert values
 
                     List<string> listhtml = new List<string> { };
-                    listhtml.Add(File.ReadAllText(@"source\head.htm"));
+                    listhtml.Add(File.ReadAllText(Path.Combine(path, @"source\head.htm")));
 
                     listhtml.Add("<title>Компьютер " + comp.MachineName + "</title>");
                     listhtml.Add("</head>");
@@ -476,7 +478,7 @@ namespace ConverterHTML
 
                     #endregion
 
-                    File.WriteAllLines(@"html\" + comp.MachineName + ".htm", listhtml);
+                    File.WriteAllLines(Path.Combine(path, @"html\" + comp.MachineName + ".htm"), listhtml);
 
                     GenList.Add(comp);
                 }
@@ -488,7 +490,7 @@ namespace ConverterHTML
             List<string> Svod = new List<string> { };
 
 
-            Svod.Add(File.ReadAllText(@"source\SvodAllHead.htm", Encoding.UTF8));
+            Svod.Add(File.ReadAllText(Path.Combine(path, @"source\SvodAllHead.htm"), Encoding.UTF8));
 
             Svod.Add("<tr><td colspan=5 align=right><b><i>Всего : " + GenList.Count + "</i></b></td></tr>");
             Svod.Add("<tr><td align=right colspan=2><div id=\"subDiv1\" style=\"display:block\"><table width=98%>");
@@ -529,47 +531,47 @@ namespace ConverterHTML
             Svod.Add("<a name=\"down\">&nbsp;</a>");
             Svod.Add("</body></html>");
 
-            File.WriteAllLines(@"html\SvodAll.htm", Svod, Encoding.UTF8);
+            File.WriteAllLines(Path.Combine(path, @"html\SvodAll.htm"), Svod, Encoding.UTF8);
 
 
             var OSSvod = GenList.GroupBy(t => t.WinVersion);
-            GroupGen(@"html\SvodOS.htm", "Группировка по операционным системам", OSSvod, "../source/win.png");
+            GroupGen(Path.Combine(path, @"html\SvodOS.htm"), "Группировка по операционным системам", OSSvod, "../source/win.png");
 
             var CPUSvod = GenList.GroupBy(t => t.CPUs[0].Name);
-            GroupGen(@"html\SvodCPU.htm", "Группировка по процессорам", CPUSvod, "../source/cpu.png");
+            GroupGen(Path.Combine(path, @"html\SvodCPU.htm"), "Группировка по процессорам", CPUSvod, "../source/cpu.png");
 
             var RamModelSvod = GenList.SelectMany(t => t.RAMArray.RAM, (comp, t) => new KeyValuePair<string, General>(t.Manufacturer + " " + t.PartNumber, comp));
-            GroupGen(@"html\SvodRAMmodel.htm", "Группировка по модели ОЗУ", RamModelSvod, "../source/ram.png");
+            GroupGen(Path.Combine(path, @"html\SvodRAMmodel.htm"), "Группировка по модели ОЗУ", RamModelSvod, "../source/ram.png");
 
             var RAMvolSvod = GenList.GroupBy(t => t.RAMArray.RAMCapacity.ToString());
-            GroupGen(@"html\SvodRAMvol.htm", "Группировка по объёму ОЗУ", RAMvolSvod, "../source/ram.png");
+            GroupGen(Path.Combine(path, @"html\SvodRAMvol.htm"), "Группировка по объёму ОЗУ", RAMvolSvod, "../source/ram.png");
 
             var RAMtypeSvod = GenList.GroupBy(t => t.RAMArray.RAM[0].DDRType);
-            GroupGen(@"html\SvodRAMtype.htm", "Группировка по типу ОЗУ", RAMtypeSvod, "../source/ram.png");
+            GroupGen(Path.Combine(path, @"html\SvodRAMtype.htm"), "Группировка по типу ОЗУ", RAMtypeSvod, "../source/ram.png");
 
             var RAMhzSvod = GenList.GroupBy(t => (t.RAMArray.RAM.Sum(s => s.Speed) / t.RAMArray.RAM.Count).ToString());
-            GroupGen(@"html\SvodRAMhz.htm", "Группировка по средней частоте ОЗУ", RAMhzSvod, "../source/ram.png");
+            GroupGen(Path.Combine(path, @"html\SvodRAMhz.htm"), "Группировка по средней частоте ОЗУ", RAMhzSvod, "../source/ram.png");
 
             var AppSvod = GenList.SelectMany(t => t.Applications, (comp, t) => new KeyValuePair<string, General>(t.DisplayName, comp));
-            GroupGen(@"html\SvodAPPS.htm", "Группировка по приложениям", AppSvod, "../source/soft.png");
+            GroupGen(Path.Combine(path, @"html\SvodAPPS.htm"), "Группировка по приложениям", AppSvod, "../source/soft.png");
 
             var MarkSvod = GenList.GroupBy(t => Math.Round(t.Marks.TotalMark, MidpointRounding.ToEven).ToString());
-            GroupGen(@"html\SvodMark.htm", "Группировка по оценочным данным", MarkSvod, "../source/mark.png");
+            GroupGen(Path.Combine(path, @"html\SvodMark.htm"), "Группировка по оценочным данным", MarkSvod, "../source/mark.png");
 
             var DriveModelSvod = GenList.SelectMany(t => t.Drives, (comp, t) => new KeyValuePair<string, General>(Helpers.GetDiskType(t.MediaType) + " | " + t.Model, comp));
-            GroupGen(@"html\SvodModelDrive.htm", "Группировка по медели накопителя", DriveModelSvod, "../source/drive.png");
+            GroupGen(Path.Combine(path, @"html\SvodModelDrive.htm"), "Группировка по медели накопителя", DriveModelSvod, "../source/drive.png");
 
             var DriveTypeSvod = GenList.SelectMany(t => t.Drives, (comp, t) => new KeyValuePair<string, General>(Helpers.GetDiskType(t.MediaType), comp));
-            GroupGen(@"html\SvodTypeDrive.htm", "Группировка по типу накопителя", DriveTypeSvod, "../source/drive.png");
+            GroupGen(Path.Combine(path, @"html\SvodTypeDrive.htm"), "Группировка по типу накопителя", DriveTypeSvod, "../source/drive.png");
 
             var DriveSizeSvod = GenList.SelectMany(t => t.Drives, (comp, t) => new KeyValuePair<string, General>(t.Size.ToString(), comp));
-            GroupGen(@"html\SvodSizeDrive.htm", "Группировка по объему накопителя", DriveSizeSvod, "../source/drive.png");
+            GroupGen(Path.Combine(path, @"html\SvodSizeDrive.htm"), "Группировка по объему накопителя", DriveSizeSvod, "../source/drive.png");
 
             var PrinterSvod = GenList.SelectMany(t => t.Printers, (comp, t) => new KeyValuePair<string, General>(t.Name, comp));
-            GroupGen(@"html\SvodPrinter.htm", "Группировка по принтера", PrinterSvod, "../source/printer.png");
+            GroupGen(Path.Combine(path, @"html\SvodPrinter.htm"), "Группировка по принтера", PrinterSvod, "../source/printer.png");
 
             var SMARTSvod = GenList.GroupBy(t => SMARTVerdict(t.GetArrtibPrimaryDriveOrEmpty()));
-            GroupGen(@"html\SvodSMART.htm", "Группировка по SMART", SMARTSvod, "../source/SMART.png");
+            GroupGen(Path.Combine(path, @"html\SvodSMART.htm"), "Группировка по SMART", SMARTSvod, "../source/SMART.png");
 
             Thread.Sleep(1000);
 
@@ -617,7 +619,6 @@ namespace ConverterHTML
             Svod.Add("<script src=\"../source/svod.js\"></script>");
             Svod.Add("</head>");
             Svod.Add("<body LEFTMARGIN=\"2\" RIGHTMARGIN=\"0\" MARGINWIDTH=\"0\" MARGINHEIGHT=\"0\" topMargin=0 bgColor=\"#ffffff\">");
-            Svod.Add("<center><h1><a name=\"up\"> </a>" + TextGroup + "</h1>");
             Svod.Add("<p>");
             Svod.Add("<table class=\"L_menu\" cellpadding=\"0\" cellspacing=\"0\" align=\"center\"  width=100%>");
             //HEAD
