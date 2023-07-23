@@ -51,6 +51,8 @@ namespace ConverterHTML
             List<string> erlist = new List<string>();
             List<General> GenList = new List<General>();
 
+            Directory.CreateDirectory(Path.Combine(path, "html"));
+
             foreach (string file in (string[])files)
             {
                 try
@@ -59,7 +61,7 @@ namespace ConverterHTML
                     string json = File.ReadAllText(file);
                     General comp = JsonConvert.DeserializeObject<General>(json);
 
-                    Directory.CreateDirectory(Path.Combine(path, "html"));
+                    this.BeginInvoke((Action)(() => { labelStatus.Text = "Конвертация: " + comp.MachineName; }));
 
                     //Convert values
                     comp.RAMArray.MaxCapacity = comp.RAMArray.MaxCapacity / 1024 / 1024;
@@ -587,17 +589,21 @@ namespace ConverterHTML
 
         void GroupGen(string NameGroup, string TextGroup, IEnumerable<IGrouping<string, General>> GenList, string iconpath)
         {
+            this.BeginInvoke((Action)(() => { labelStatus.Text = "Группировка: " + TextGroup; }));
+
             var GenList_sub = GenList.ToDictionary(t => t.Key, g => g.ToList());
-            GroupGen_sub(NameGroup, TextGroup, GenList_sub, iconpath);
+            GroupGen_sub(NameGroup, GenList_sub, iconpath);
         }
 
         void GroupGen(string NameGroup, string TextGroup, IEnumerable<KeyValuePair<string, General>> GenList, string iconpath)
         {
+            this.BeginInvoke((Action)(() => { labelStatus.Text = "Группировка: " + TextGroup; }));
+
             var GenList_sub = GenList.GroupBy(t => t.Key).ToDictionary(g => g.Key, g => g.Select(v => v.Value).ToList());
-            GroupGen_sub(NameGroup, TextGroup, GenList_sub, iconpath);
+            GroupGen_sub(NameGroup, GenList_sub, iconpath);
         }
 
-        void GroupGen_sub(string NameGroup, string TextGroup, Dictionary<string, List<General>> GenList, string iconpath)
+        void GroupGen_sub(string NameGroup, Dictionary<string, List<General>> GenList, string iconpath)
         {
             List<string> Svod = new List<string>();
 
@@ -672,7 +678,7 @@ namespace ConverterHTML
 
             Svod.Add("</tbody></table>");
 
-            System.IO.File.WriteAllLines(NameGroup, Svod, Encoding.UTF8);
+            File.WriteAllLines(NameGroup, Svod, Encoding.UTF8);
         }
 
         Dictionary<int, Smart> CheckSmart(Dictionary<int, Smart> SMART)
