@@ -41,16 +41,16 @@ namespace System_Information
 
             if (savepath == "") { savepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Environment.MachineName + ".json"); }
 
-            //try
+            try
             {
                 General Information = GenerateInformation.GenerateInformation.Generation();
 
                 if (ftpserver == "") { File.WriteAllText(savepath, JsonConvert.SerializeObject(Information)); }
                 else { FTPUpload(JsonConvert.SerializeObject(Information), ftpserver, ftpuser, ftppass); }
             }
-            //catch (Exception ex)
+            catch (Exception ex)
             {
-                //File.WriteAllText(Path.Combine(savepath, Environment.MachineName + "_error.txt"), ex.ToString());
+                File.WriteAllText(Path.Combine(savepath, Environment.MachineName + "_error.txt"), ex.ToString());
             }
         }
 

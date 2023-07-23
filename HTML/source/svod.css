@@ -1,0 +1,19 @@
+ul        {margin: 0; padding: 0; width: 180px; }
+
+ul li     {display: block; background: #f1f0fa; margin: 0; padding: 0; }           
+
+a         {font-family :Arial; text-decoration: none; font-size : 10pt; }
+
+td        {font-size : 10pt; font-family :Arial;}
+
+img             {border-style:none; vertical-align:middle}
+
+a.L_menu        {font-family:arial; font-size:12px; text-decoration:none; width:100%; height:100% color:#333333;}                 
+                
+a.L_menu:hover  {color: #000000; background-color: #ffbec7;}             
+                
+a.L_menu:active {color: #000000; background-color: #ffbec7; }
+
+a.S_menu        {font-family:arial; font-size:12px; text-decoration:none; width:100%; height:100% color:#333333; }                
+                
+a.S_menu:hover  {color: #000000; background-color: #ffbec7;}

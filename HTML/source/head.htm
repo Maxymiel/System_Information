@@ -1,0 +1,56 @@
+﻿<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <meta name="description" content="Учет компьютеров">
+<script>
+var mode = 0
+function shiftSubDiv(n)
+{
+  var el = document.getElementById('subDiv'+n);
+  var im = document.getElementById('image'+n);
+
+  if ( el )  
+  if ( el.style.display == 'none' )
+    {
+    if ( mode == 0)
+      {   
+      el.style.display = 'block'
+      im.src='../source/minus.png'
+      }
+    }
+  else
+    if ( el.style.display == 'block' )
+    {
+    el.style.display = 'none';
+    im.src='../source/plus.png'
+    }
+
+}
+
+function CloseSubDiv(n)
+{
+for(i=0;i<=n;i++) 
+ {
+ mode = 1
+ shiftSubDiv(i)
+ mode = 0
+ } 
+}
+</script>
+
+<style type="text/css">
+html
+{
+	background-image: url(../source/background.jpg);
+	background-attachment: fixed;
+	background-size: cover;
+}
+table
+{
+	background-color: white;
+}
+td
+{
+	padding: 3px;
+}
+</style>
