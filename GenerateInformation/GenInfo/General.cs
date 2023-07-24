@@ -47,5 +47,20 @@ namespace GenerateInformation
             }
             else { return new Dictionary<int, Smart>(); }
         }
+
+        public bool IsCorrect()
+        {
+            bool Correct = true;
+
+            if (MachineName == null || MachineName == "") { Correct = false; }
+            if (OSArchitecture == null || OSArchitecture == "") { Correct = false; }
+            if (Motherboard == null) { Correct = false; }
+            if (CPUs.Count == 0) { Correct = false; }
+            if (Motherboard == null) { Correct = false; }
+            if (Motherboard.Product == null) { Correct = false; }
+            if (RAMArray.RAM.Count == 0) { Correct = false; }
+
+            return Correct;
+        }
     }
 }

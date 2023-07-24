@@ -14,9 +14,10 @@ namespace GenerateInformation
         public ulong Size { get; set; }
         public string InstanceName { get; set; }
         public bool IsPrimary { get; set; }
-        public string DeviceId { get; set; }
+        public string DeviceID { get; set; }
         public ushort BusType { get; set; }
         public string InterfaceType { get; set; }
+        public string Path { get; set; }
 
         public Drive() { }
         public Drive(string model, string serialNumber, ushort mediaType, string instanceName, ulong size, string deviceId)
@@ -26,7 +27,7 @@ namespace GenerateInformation
             MediaType = mediaType;
             Size = size;
             InstanceName = instanceName;
-            DeviceId = deviceId;
+            DeviceID = deviceId;
         }
 
         public Dictionary<int, Smart> SmartAttributes = new Dictionary<int, Smart>()

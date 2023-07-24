@@ -25,6 +25,19 @@ namespace ConverterHTML
             InitializeComponent();
         }
 
+        public static void ExToFile(Exception ex)
+        {
+            string file = AppDomain.CurrentDomain.BaseDirectory + "\\errors.log";
+
+            List<string> log = new List<string>();
+
+            log.Add(DateTime.Now.ToString());
+            log.Add(ex.ToString());
+            log.Add("");
+
+            File.AppendAllLines(file, log);
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             path = Program.path != "" ? Program.path : "";
@@ -48,7 +61,6 @@ namespace ConverterHTML
 
         private void Cvrt(object files)
         {
-            List<string> erlist = new List<string>();
             List<General> GenList = new List<General>();
 
             Directory.CreateDirectory(Path.Combine(path, "html"));
@@ -57,9 +69,10 @@ namespace ConverterHTML
             {
                 try
                 {
-                    #region GENERAL
                     string json = File.ReadAllText(file);
                     General comp = JsonConvert.DeserializeObject<General>(json);
+
+                    if (!comp.IsCorrect()) { throw new Exception("Недостаточно данных по компьютеру " + (comp.MachineName != null ? comp.MachineName : "не определено")); }
 
                     this.BeginInvoke((Action)(() => { labelStatus.Text = "Конвертация: " + comp.MachineName; }));
 
@@ -68,6 +81,8 @@ namespace ConverterHTML
                     foreach (var item in comp.RAMArray.RAM) { item.Capacity = item.Capacity / 1024 / 1024; }
                     foreach (var item in comp.Drives) { item.Size = item.Size / 1024 / 1024 / 1024; }
                     //Convert values
+
+                    #region GENERAL
 
                     List<string> listhtml = new List<string> { };
                     listhtml.Add(File.ReadAllText(Path.Combine(path, @"source\head.htm")));
@@ -484,7 +499,7 @@ namespace ConverterHTML
 
                     GenList.Add(comp);
                 }
-                catch { erlist.Add("Не обработано: " + file); }
+                catch (Exception ex) { ExToFile(ex); }
 
                 this.BeginInvoke((Action)(() => { progressBar1.Value++; }));
             }
@@ -542,6 +557,9 @@ namespace ConverterHTML
             var CPUSvod = GenList.GroupBy(t => t.CPUs[0].Name);
             GroupGen(Path.Combine(path, @"html\SvodCPU.htm"), "Группировка по процессорам", CPUSvod, "../source/cpu.png");
 
+            var MarkMotherboardSvod = GenList.GroupBy(t => t.Motherboard.Manufacturer + " " + t.Motherboard.Product);
+            GroupGen(Path.Combine(path, @"html\SvodMotherboard.htm"), "Группировка по материнским платам", MarkMotherboardSvod, "../source/mother.png");
+
             var RamModelSvod = GenList.SelectMany(t => t.RAMArray.RAM, (comp, t) => new KeyValuePair<string, General>(t.Manufacturer + " " + t.PartNumber, comp));
             GroupGen(Path.Combine(path, @"html\SvodRAMmodel.htm"), "Группировка по модели ОЗУ", RamModelSvod, "../source/ram.png");
 
@@ -579,11 +597,8 @@ namespace ConverterHTML
 
             this.BeginInvoke((Action)(() =>
             {
-                if (Program.path != "")
-                {
-                    if (erlist.Count > 0) { MessageBox.Show(string.Join(Environment.NewLine, erlist)); }
-                    this.Close();
-                }
+                if (Program.path != "") { this.Close(); }
+                else { labelStatus.Text = "Готово!"; }
             }));
         }
 
@@ -694,7 +709,7 @@ namespace ConverterHTML
                 else { smart.Value.Status = 0; }
             }
 
-            if (SMART.ContainsKey(5) && SMART[5].Data > 5) { SMART[5].Status = 2; }
+            if (SMART.ContainsKey(5) && SMART[5].Data > 1) { SMART[5].Status = 2; }
             if (SMART.ContainsKey(10) && SMART[10].Data > 5) { SMART[10].Status = 1; }
             if (SMART.ContainsKey(11) && SMART[11].Data > 10) { SMART[11].Status = 1; }
             if (SMART.ContainsKey(184) && SMART[184].Data > 0) { SMART[184].Status = 1; }

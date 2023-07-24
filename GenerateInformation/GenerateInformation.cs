@@ -122,48 +122,61 @@ namespace GenerateInformation
 
             //DRIVE INFORMATION
 
-            InitializeInformation(new ManagementObjectSearcher(@"root\Microsoft\Windows\Storage", "SELECT * FROM MSFT_PhysicalDisk"), information.Drives);
-
-            if (information.Drives.Count == 0) { InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "Select * from Win32_DiskDrive"), information.Drives); }
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "Select * from Win32_DiskDrive"), information.Drives);
 
             try
             {
                 //Primary disk detect
 
+                foreach (Drive drive in information.Drives)
+                {
+                    var partitionQuery = new ManagementObjectSearcher("associators of {Win32_DiskDrive.DeviceID=\"" + drive.DeviceID.Replace("\\", "\\\\") + "\"} where AssocClass = Win32_DiskDriveToDiskPartition");
+                    foreach (ManagementObject partition in partitionQuery.Get())
+                    {
+                        var logicalDriveQuery = new ManagementObjectSearcher("associators of {" + partition.Path.RelativePath + "} where AssocClass = Win32_LogicalDiskToPartition");
+                        foreach (ManagementObject ld in logicalDriveQuery.Get())
+                        {
+                            var driveId = Convert.ToString(ld.Properties["DeviceId"].Value);
+
+                            if (driveId == information.SystemDrive) { drive.IsPrimary = true; }
+                        }
+                    }
+                }
+
+                //Get MediaType
+
                 try
                 {
-                    ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2",
-                                "SELECT * FROM Win32_DiskPartition WHERE BootPartition=True");
-
-                    foreach (ManagementObject queryObj in searcher.Get())
+                    var PhysicalDiskQuery = new ManagementObjectSearcher(@"root\Microsoft\Windows\Storage", "SELECT * FROM MSFT_PhysicalDisk");
+                    foreach (ManagementObject PhysicalDisk in PhysicalDiskQuery.Get())
                     {
-                        information.Drives.Find(t => t.DeviceId == queryObj["DiskIndex"].ToString()).IsPrimary = true;
+                        if (PhysicalDisk["SerialNumber"].ToString() != "")
+                        {
+                            Drive drive = information.Drives.Find(t => t.SerialNumber != null && t.SerialNumber.Contains(PhysicalDisk["SerialNumber"].ToString()));
+                            if (drive != null) { drive.MediaType = PhysicalDisk["MediaType"]; }
+                        }
                     }
                 }
                 catch { }
 
                 //Get instances
 
-                try
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2",
+                            "Select * from Win32_DiskDrive");
+
+                foreach (ManagementObject queryObj in searcher.Get())
                 {
-                    ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2",
-                                "Select * from Win32_DiskDrive");
-
-                    foreach (ManagementObject queryObj in searcher.Get())
+                    foreach (var property in queryObj.Properties)
                     {
-                        foreach (var property in queryObj.Properties)
+                        if (property.Name == "SerialNumber" && property.Value != null)
                         {
-                            if (property.Name == "SerialNumber" && property.Value != null)
-                            {
-                                string sn = property.Value.ToString().ToLower();
+                            string sn = property.Value.ToString().ToLower();
 
-                                Drive drive = information.Drives.Find(t => t.SerialNumber != null && sn.Contains(t.SerialNumber.ToLower()));
-                                if (drive != null) { drive.InstanceName = queryObj["PNPDeviceID"].ToString(); }
-                            }
+                            Drive drive = information.Drives.Find(t => t.SerialNumber != null && sn.Contains(t.SerialNumber.ToLower()));
+                            if (drive != null) { drive.InstanceName = queryObj["PNPDeviceID"].ToString(); }
                         }
                     }
                 }
-                catch { }
             }
             catch { }
 

@@ -19,30 +19,28 @@ namespace System_Information
     {
         static void Main(string[] args)
         {
-            string ftpserver = "";
-            string ftpuser = "";
-            string ftppass = "";
-
-            string savepath = "";
-
-            foreach (string arg in args)
-            {
-                if (arg.ToLower().StartsWith("ftp://"))
-                {
-                    ftpserver = arg.Split('@')[1];
-                    ftpuser = arg.Replace("ftp://", "").Split('@')[0].Split(':')[0];
-                    ftppass = arg.Replace("ftp://", "").Split('@')[0].Split(':')[1];
-                }
-                else
-                {
-                    savepath = Path.Combine(args[0], Environment.MachineName + ".json");
-                }
-            }
-
-            if (savepath == "") { savepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Environment.MachineName + ".json"); }
+            string savepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Environment.MachineName + ".json");
 
             try
             {
+                string ftpserver = "";
+                string ftpuser = "";
+                string ftppass = "";
+
+                foreach (string arg in args)
+                {
+                    if (arg.ToLower().StartsWith("ftp://"))
+                    {
+                        ftpserver = arg.Split('@')[1];
+                        ftpuser = arg.Replace("ftp://", "").Split('@')[0].Split(':')[0];
+                        ftppass = arg.Replace("ftp://", "").Split('@')[0].Split(':')[1];
+                    }
+                    else
+                    {
+                        savepath = Path.Combine(args[0], Environment.MachineName + ".json");
+                    }
+                }
+
                 General Information = GenerateInformation.GenerateInformation.Generation();
 
                 if (ftpserver == "") { File.WriteAllText(savepath, JsonConvert.SerializeObject(Information)); }

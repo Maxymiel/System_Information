@@ -7,6 +7,9 @@ namespace ConverterHTML
 {
     public partial class Helpers
     {
+        /// <summary>
+        /// Get type of socket by "UpgradeMethod"
+        /// </summary>
         public static string GetSocket(ushort UpgradeMethod)
         {
             switch (UpgradeMethod)
@@ -131,6 +134,9 @@ namespace ConverterHTML
         /// </summary>
         public static string GetDiskType(object MediaType)
         {
+            if (MediaType == null) { return "Unspecified"; }
+            if (MediaType.GetType() == typeof(string)) { return MediaType.ToString(); }
+
             ushort mediaType;
             ushort.TryParse(MediaType.ToString(), out mediaType);
 
