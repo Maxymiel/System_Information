@@ -24,3 +24,6 @@ ConverterHTML.exe \\server\HTML
 ```
 ## Просмотр данных
 Откройте index.htm из папки HTML через любой браузер
+
+## Пример работы
+![Пример работы](https://github.com/Maxymiel/System_Information/blob/master/HTML/source/example.png)
