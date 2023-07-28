@@ -51,7 +51,7 @@ namespace ConverterHTML
                 }
             }
 
-            string[] files = Directory.GetFiles(Path.Combine(path, "InputFiles"));
+            string[] files = Directory.GetFiles(Path.Combine(path, "InputFiles"), "*.json");
 
             progressBar1.Maximum = files.Length;
 
