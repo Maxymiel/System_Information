@@ -142,6 +142,8 @@ namespace ConverterHTML
 
             switch (mediaType)
             {
+                case 9999:
+                    return "USB";
                 case 3:
                     return "HDD";
                 case 4:

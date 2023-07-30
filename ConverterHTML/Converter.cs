@@ -303,6 +303,7 @@ namespace ConverterHTML
 
                             if (drive.BusType != 0) { driveInterface = Helpers.GetDiskInterface(drive.BusType); }
                             else if (drive.InterfaceType != "") { driveInterface = drive.InterfaceType; }
+                            if (driveInterface == "USB") { drive.MediaType = 9999; }
 
                             listhtml.Add(Helpers.GetDiskType(drive.MediaType) + " | " + "");
                             listhtml.Add(drive.Model + "<br>");
@@ -575,7 +576,7 @@ namespace ConverterHTML
             var AppSvod = GenList.SelectMany(t => t.Applications, (comp, t) => new KeyValuePair<string, General>(t.DisplayName, comp));
             GroupGen(Path.Combine(path, @"html\SvodAPPS.htm"), "Группировка по приложениям", AppSvod, "../source/soft.png");
 
-            var MarkSvod = GenList.GroupBy(t => Math.Round(t.Marks.TotalMark, MidpointRounding.ToEven).ToString());
+            var MarkSvod = GenList.GroupBy(t => GeTotaltMarkFromLVL2(t.Marks.TotalMark));
             GroupGen(Path.Combine(path, @"html\SvodMark.htm"), "Группировка по оценочным данным", MarkSvod, "../source/mark.png");
 
             var DriveModelSvod = GenList.SelectMany(t => t.Drives, (comp, t) => new KeyValuePair<string, General>(Helpers.GetDiskType(t.MediaType) + " | " + t.Model, comp));
