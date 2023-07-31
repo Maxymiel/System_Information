@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using GenerateInformation.GenInfo;
 
 namespace System_Information
 {

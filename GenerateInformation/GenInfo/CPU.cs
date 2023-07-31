@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GenerateInformation
+﻿namespace GenerateInformation.GenInfo
 {
     public class CPU
     {
@@ -15,13 +9,5 @@ namespace GenerateInformation
         public ushort UpgradeMethod { get; set; }
 
         public CPU() { }
-        public CPU(string name, uint maxClockSpeed, uint numberOfCores, string processorId, ushort upgradeMethod)
-        {
-            Name = name;
-            MaxClockSpeed = maxClockSpeed;
-            NumberOfCores = numberOfCores;
-            ProcessorId = processorId;
-            UpgradeMethod = upgradeMethod;
-        }
     }
 }
