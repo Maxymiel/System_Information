@@ -2,6 +2,7 @@
 {
     public class Marks
     {
+        public Marks() { }
         public float CPUScore { get; set; }
         public float DiskScore { get; set; }
         public float GraphicsScore { get; set; }
@@ -10,7 +11,5 @@
         public ulong TotalDrivesSize { get; set; }
 
         public double TotalMark { get; set; }
-
-        public Marks() { }
     }
 }
