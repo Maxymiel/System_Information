@@ -26,11 +26,11 @@ namespace GenerateInformation
             information.MachineName = Environment.MachineName;
 
             information.IsVirtualMachine = IsVirtualMachine();
-            information.UserName = getuser();
-            information.LoginAsAdministrator = loginasadmin();
+            information.UserName = Getuser();
+            information.LoginAsAdministrator = Loginasadmin();
             information.WinVersion = GetWinVer();
 
-            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_OperatingSystem"), information);
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_OperatingSystem"), information)?.AddList(information.Errors);
 
             //NETWORK INFORMATION
 
@@ -54,11 +54,11 @@ namespace GenerateInformation
                         }
                 }
             }
-            catch { }
+            catch (Exception ex) { ex.Source = "NETWORK INFORMATION"; information.Errors.Add(ex); }
 
             //MOTHERBOARD INFORMATION
 
-            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_BaseBoard"), information.Motherboard);
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_BaseBoard"), information.Motherboard)?.AddList(information.Errors);
 
             //VIDEO INFORMATION
 
@@ -68,6 +68,7 @@ namespace GenerateInformation
                 subkeys = subkeys.Where(t => Regex.IsMatch(t, @"\d*")).ToArray();
 
                 for (var i = 0; i < subkeys.Length; i++)
+                {
                     using (var rk2 = rk.OpenSubKey(subkeys[i]))
                     {
                         if (rk2.GetValue("DriverDesc") != null)
@@ -96,31 +97,32 @@ namespace GenerateInformation
                             break;
                         }
                     }
+                }
             }
 
             if (information.VideoAdapter.AdapterRAM == 0)
             {
-                InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_VideoController"), information.VideoAdapter);
+                InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_VideoController"), information.VideoAdapter)?.AddList(information.Errors);
                 information.VideoAdapter.AdapterRAM = information.VideoAdapter.AdapterRAM / 1024 / 1024;
             }
 
             //CPU INFORMATION
 
-            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Processor"), information.CPUs);
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Processor"), information.CPUs)?.AddList(information.Errors);
 
             //RAM INFORMATION
 
-            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_PhysicalMemory"), information.RAMArray.RAM);
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_PhysicalMemory"), information.RAMArray.RAM)?.AddList(information.Errors);
 
-            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM win32_PhysicalMemoryArray"), information.RAMArray);
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM win32_PhysicalMemoryArray"), information.RAMArray)?.AddList(information.Errors);
 
             //MONITOR INFORMATION
 
-            InitializeInformation(new ManagementObjectSearcher("root\\wmi", "SELECT * FROM WmiMonitorID"), information.Monitors);
+            InitializeInformation(new ManagementObjectSearcher("root\\wmi", "SELECT * FROM WmiMonitorID"), information.Monitors)?.AddList(information.Errors);
 
             //DRIVE INFORMATION
 
-            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "Select * from Win32_DiskDrive"), information.Drives);
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "Select * from Win32_DiskDrive"), information.Drives)?.AddList(information.Errors);
 
             try
             {
@@ -130,10 +132,10 @@ namespace GenerateInformation
                 {
                     var partitionQuery = new ManagementObjectSearcher("associators of {Win32_DiskDrive.DeviceID=\"" + drive.DeviceID.Replace("\\", "\\\\") +
                                                                       "\"} where AssocClass = Win32_DiskDriveToDiskPartition");
-                    foreach (ManagementObject partition in partitionQuery.Get())
+                    foreach (ManagementObject partition in partitionQuery.Get().Cast<ManagementObject>())
                     {
                         var logicalDriveQuery = new ManagementObjectSearcher("associators of {" + partition.Path.RelativePath + "} where AssocClass = Win32_LogicalDiskToPartition");
-                        foreach (ManagementObject ld in logicalDriveQuery.Get())
+                        foreach (ManagementObject ld in logicalDriveQuery.Get().Cast<ManagementObject>())
                         {
                             var driveId = Convert.ToString(ld.Properties["DeviceId"].Value);
 
@@ -147,36 +149,42 @@ namespace GenerateInformation
                 try
                 {
                     var PhysicalDiskQuery = new ManagementObjectSearcher(@"root\Microsoft\Windows\Storage", "SELECT * FROM MSFT_PhysicalDisk");
-                    foreach (ManagementObject PhysicalDisk in PhysicalDiskQuery.Get())
+                    foreach (ManagementObject PhysicalDisk in PhysicalDiskQuery.Get().Cast<ManagementObject>())
+                    {
                         if (PhysicalDisk["SerialNumber"].ToString() != "")
                         {
                             var drive = information.Drives.Find(t => t.SerialNumber != null && t.SerialNumber.Contains(PhysicalDisk["SerialNumber"].ToString()));
                             if (drive != null) drive.MediaType = PhysicalDisk["MediaType"];
                         }
+                    }
                 }
-                catch { }
+                catch (Exception ex) { ex.Source = "MediaType"; information.Errors.Add(ex); }
 
                 //Get instances
 
                 var searcher = new ManagementObjectSearcher("root\\CIMV2", "Select * from Win32_DiskDrive");
 
-                foreach (ManagementObject queryObj in searcher.Get())
-                foreach (var property in queryObj.Properties)
-                    if (property.Name == "SerialNumber" && property.Value != null)
+                foreach (ManagementObject queryObj in searcher.Get().Cast<ManagementObject>())
+                {
+                    foreach (var property in queryObj.Properties)
                     {
-                        var sn = property.Value.ToString().ToLower();
+                        if (property.Name == "SerialNumber" && property.Value != null)
+                        {
+                            var sn = property.Value.ToString().ToLower();
 
-                        var drive = information.Drives.Find(t => t.SerialNumber != null && sn.Contains(t.SerialNumber.ToLower()));
-                        if (drive != null) drive.InstanceName = queryObj["PNPDeviceID"].ToString();
+                            var drive = information.Drives.Find(t => t.SerialNumber != null && sn.Contains(t.SerialNumber.ToLower()));
+                            if (drive != null) drive.InstanceName = queryObj["PNPDeviceID"].ToString();
+                        }
                     }
+                }
             }
-            catch { }
+            catch (Exception ex) { ex.Source = "DiskDetect"; information.Errors.Add(ex); }
 
             //MARKS INFORMATION
 
             information.Marks = new Marks();
 
-            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_WinSAT"), information.Marks);
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_WinSAT"), information.Marks)?.AddList(information.Errors);
 
             information.Marks.TotalmemMark = information.RAMArray.RAMCapacity;
             information.Marks.TotalDrivesSize = (ulong)information.Drives.Sum(v => (long)v.Size) / 1024 / 1024 / 1024;
@@ -187,7 +195,7 @@ namespace GenerateInformation
             {
                 var searcher = new ManagementObjectSearcher("root\\wmi", "Select * from MSStorageDriver_FailurePredictData");
 
-                foreach (ManagementObject queryObj in searcher.Get())
+                foreach (ManagementObject queryObj in searcher.Get().Cast<ManagementObject>())
                 {
                     var instance = queryObj["InstanceName"].ToString();
 
@@ -197,6 +205,7 @@ namespace GenerateInformation
                     {
                         var bytes = (byte[])queryObj.Properties["VendorSpecific"].Value;
                         for (var i = 0; i < 30; ++i)
+                        {
                             try
                             {
                                 int id = bytes[i * 12 + 2];
@@ -216,19 +225,20 @@ namespace GenerateInformation
                                 attr.Data = vendordata;
                                 attr.IsOK = failureImminent == false;
                             }
-                            catch { }
+                            catch (Exception ex) { ex.Source = "SMART INFORMATION CONVERTER"; information.Errors.Add(ex); }
+                        }
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { ex.Source = "SMART INFORMATION"; information.Errors.Add(ex); }
 
             //PRINTERS INFORMATION
 
-            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Printer"), information.Printers);
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Printer"), information.Printers)?.AddList(information.Errors);
 
             //DEVICES INFORMATION
 
-            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "Select * from Win32_PnPentity"), information.Devices);
+            InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "Select * from Win32_PnPentity"), information.Devices)?.AddList(information.Errors);
 
             //APPLICATIONS INFORMATION
 
@@ -242,7 +252,7 @@ namespace GenerateInformation
 
                 information.Applications = information.Applications.OrderBy(p => p.DisplayName).ToList();
             }
-            catch { }
+            catch (Exception ex) { ex.Source = "APPLICATIONS INFORMATION"; information.Errors.Add(ex); }
 
             //STARTUP REGISTRY INFORMATION
 
@@ -253,7 +263,7 @@ namespace GenerateInformation
 
                 foreach (var valueName in StUpKey.GetValueNames()) information.startUpKeys.Add(new StartUpKey(valueName, StUpKey.GetValue(valueName).ToString()));
             }
-            catch { }
+            catch (Exception ex) { ex.Source = "STARTUP REGISTRY INFORMATION - HKLM"; information.Errors.Add(ex); }
 
             try
             {
@@ -261,7 +271,7 @@ namespace GenerateInformation
 
                 foreach (var valueName in StUpKey.GetValueNames()) information.startUpKeys.Add(new StartUpKey(valueName, StUpKey.GetValue(valueName).ToString()));
             }
-            catch { }
+            catch (Exception ex) { ex.Source = "STARTUP REGISTRY INFORMATION - HKCU"; information.Errors.Add(ex); }
 
             //SERVICES INFORMATION
 
@@ -274,12 +284,12 @@ namespace GenerateInformation
                 for (var i = 0; i < scServices.Length; i++)
                     information.Services.Add(new Service(scServices[i].DisplayName, scServices[i].ServiceName, scServices[i].Status.ToString()));
             }
-            catch { }
+            catch (Exception ex) { ex.Source = "SERVICES INFORMATION"; information.Errors.Add(ex); }
 
             return information;
         }
 
-        private static void InitializeInformation<T>(ManagementObjectSearcher searcher, T objectinfo)
+        private static Exception InitializeInformation<T>(ManagementObjectSearcher searcher, T objectinfo)
         {
             try
             {
@@ -298,11 +308,13 @@ namespace GenerateInformation
                                 objectinfo.GetType().GetProperty(property.Name).SetValue(objectinfo, val, null);
                             }
                 }
+
+                return null;
             }
-            catch (Exception ex) { }
+            catch (Exception ex) { return ex; }
         }
 
-        private static void InitializeInformation<T>(ManagementObjectSearcher searcher, List<T> objectinfo) where T : new()
+        private static Exception InitializeInformation<T>(ManagementObjectSearcher searcher, List<T> objectinfo) where T : new()
         {
             try
             {
@@ -328,8 +340,10 @@ namespace GenerateInformation
                         objectinfo.Add(newobj);
                     }
                 }
+
+                return null;
             }
-            catch (Exception ex) { }
+            catch (Exception ex) { return ex; }
         }
 
         private static string ShortToString(object ushortsasobject)
@@ -482,7 +496,7 @@ namespace GenerateInformation
 
                     var searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_OperatingSystem");
 
-                    foreach (ManagementObject queryObj in searcher.Get()) win = queryObj["Caption"].ToString();
+                    foreach (ManagementObject queryObj in searcher.Get().Cast<ManagementObject>()) win = queryObj["Caption"].ToString();
                     return win;
                 }
                 catch
@@ -492,7 +506,7 @@ namespace GenerateInformation
             }
         }
 
-        private static string getuser()
+        private static string Getuser()
         {
             try
             {
@@ -556,7 +570,7 @@ namespace GenerateInformation
             return "NO OWNER";
         }
 
-        private static bool loginasadmin()
+        private static bool Loginasadmin()
         {
             try
             {
@@ -571,7 +585,7 @@ namespace GenerateInformation
                         break;
                     }
 
-                var user = getuser();
+                var user = Getuser();
 
                 var members = admGroup.Invoke("members", null);
 
@@ -591,6 +605,13 @@ namespace GenerateInformation
             {
                 return false;
             }
+        }
+    }
+    public static class ExtensionAdd
+    {
+        public static void AddList(this Exception error, List<Exception> list)
+        {
+            list.Add(error);
         }
     }
 }

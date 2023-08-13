@@ -65,7 +65,7 @@ namespace ConverterHTML
                     var json = File.ReadAllText(file);
                     var comp = JsonConvert.DeserializeObject<General>(json);
 
-                    if (!comp.IsCorrect()) throw new Exception("Недостаточно данных по компьютеру " + (comp.MachineName != null ? comp.MachineName : "не определено"));
+                    if (!comp.IsCorrect()) throw new Exception("Недостаточно данных по компьютеру " + (comp.MachineName ?? "не определено"));
 
                     BeginInvoke((Action)(() => { labelStatus.Text = "Конвертация: " + comp.MachineName; }));
 

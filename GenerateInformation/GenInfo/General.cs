@@ -18,6 +18,7 @@ namespace GenerateInformation.GenInfo
         public RAMArray RAMArray = new RAMArray();
         public List<Service> Services = new List<Service>();
         public List<StartUpKey> startUpKeys = new List<StartUpKey>();
+        public List<Exception> Errors = new List<Exception>();
         public DateTime GenDate { get; set; }
         public string MachineName { get; set; }
         public string WinVersion { get; set; }
@@ -32,6 +33,7 @@ namespace GenerateInformation.GenInfo
         public bool LoginAsAdministrator { get; set; }
         public VideoAdapter VideoAdapter { get; set; }
         public Marks Marks { get; set; }
+        
 
         public Dictionary<int, Smart> GetArrtibPrimaryDriveOrEmpty()
         {
