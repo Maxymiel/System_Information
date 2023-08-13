@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace ConverterHTML
+﻿namespace ConverterHTML
 {
-    public partial class Helpers
+    public class Helpers
     {
         /// <summary>
-        /// Get type of socket by "UpgradeMethod"
+        ///     Get type of socket by "UpgradeMethod"
         /// </summary>
         public static string GetSocket(ushort UpgradeMethod)
         {
@@ -130,18 +125,21 @@ namespace ConverterHTML
         }
 
         /// <summary>
-        /// Get disk type by MediaType (https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/msft-physicaldisk#members)
+        ///     Get disk type by MediaType
+        ///     (https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/msft-physicaldisk#members)
         /// </summary>
         public static string GetDiskType(object MediaType)
         {
-            if (MediaType == null) { return "Unspecified"; }
-            if (MediaType.GetType() == typeof(string)) { return MediaType.ToString(); }
+            if (MediaType == null) return "Unspecified";
+            if (MediaType.GetType() == typeof(string)) return MediaType.ToString();
 
             ushort mediaType;
             ushort.TryParse(MediaType.ToString(), out mediaType);
 
             switch (mediaType)
             {
+                case 9999:
+                    return "USB";
                 case 3:
                     return "HDD";
                 case 4:
@@ -154,7 +152,8 @@ namespace ConverterHTML
         }
 
         /// <summary>
-        /// Get disk interface by BusType (https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/msft-physicaldisk#members)
+        ///     Get disk interface by BusType
+        ///     (https://learn.microsoft.com/en-us/windows-hardware/drivers/storage/msft-physicaldisk#members)
         /// </summary>
         public static string GetDiskInterface(ushort BusType)
         {
@@ -202,7 +201,7 @@ namespace ConverterHTML
         }
 
         /// <summary>
-        /// Get monitor manufacturer by manufacturer code from registry
+        ///     Get monitor manufacturer by manufacturer code from registry
         /// </summary>
         public static string GetMonitorManufacturer(string ManufacturerName)
         {

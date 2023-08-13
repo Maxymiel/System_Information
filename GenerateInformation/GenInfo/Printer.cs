@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace GenerateInformation
+﻿namespace GenerateInformation.GenInfo
 {
     public class Printer
     {
+        public Printer() { }
         public string Name { get; set; }
         public string DeviceID { get; set; }
         public string DriverName { get; set; }
@@ -14,7 +10,5 @@ namespace GenerateInformation
         public bool Shared { get; set; }
         public bool Network { get; set; }
         public string ErrorInformation { get; set; }
-
-        public Printer() { }
     }
 }

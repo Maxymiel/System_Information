@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GenerateInformation
+namespace GenerateInformation.GenInfo
 {
     public class RAMArray
     {
@@ -14,15 +11,13 @@ namespace GenerateInformation
 
         public ulong RAMCapacity
         {
-            get
-            {
-                return (ulong)RAM.Sum(v => (long)v.Capacity);
-            }
+            get { return (ulong)RAM.Sum(v => (long)v.Capacity); }
         }
     }
 
     public class RAM
     {
+        public RAM() { }
         public string BankLabel { get; set; }
         public ushort MemoryType { get; set; }
         public uint SMBIOSMemoryType { get; set; }
@@ -35,25 +30,16 @@ namespace GenerateInformation
         {
             get
             {
-                if (SMBIOSMemoryType != 0) { return FormatDDR(SMBIOSMemoryType); }
-                else if (MemoryType != 0) { return FormatDDR(MemoryType); }
-                else { return ""; }
+                if (SMBIOSMemoryType != 0)
+                    return FormatDDR(SMBIOSMemoryType);
+                if (MemoryType != 0)
+                    return FormatDDR(MemoryType);
+                return "";
             }
             set { }
         }
 
-        public RAM() { }
-        public RAM(string bankLabel, uint sMBIOSMemoryType, string manufacturer, string partNumber, ulong capacity, uint speed)
-        {
-            BankLabel = bankLabel;
-            SMBIOSMemoryType = sMBIOSMemoryType;
-            Manufacturer = manufacturer;
-            PartNumber = partNumber;
-            Capacity = capacity;
-            Speed = speed;
-        }
-
-        string FormatDDR(UInt32 RAMSMBIOSMemoryType)
+        private string FormatDDR(uint RAMSMBIOSMemoryType)
         {
             switch (RAMSMBIOSMemoryType)
             {

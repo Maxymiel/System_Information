@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GenerateInformation
+﻿namespace GenerateInformation.GenInfo
 {
     public class Marks
     {
+        public Marks() { }
         public float CPUScore { get; set; }
         public float DiskScore { get; set; }
         public float GraphicsScore { get; set; }
@@ -16,7 +11,5 @@ namespace GenerateInformation
         public ulong TotalDrivesSize { get; set; }
 
         public double TotalMark { get; set; }
-
-        public Marks() { }
     }
 }
