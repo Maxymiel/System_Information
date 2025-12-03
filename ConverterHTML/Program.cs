@@ -5,7 +5,7 @@ namespace ConverterHTML
 {
     public static class Program
     {
-        public static string path = "";
+        public static string path = "HTML";
 
         /// <summary>
         ///     Главная точка входа для приложения.
@@ -13,7 +13,10 @@ namespace ConverterHTML
         [STAThread]
         private static void Main(string[] args)
         {
-            if (args.Length != 0) path = args[0];
+            if (args.Length != 0)
+            {
+                path = args[0];
+            }
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

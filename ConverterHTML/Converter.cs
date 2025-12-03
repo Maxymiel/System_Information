@@ -524,7 +524,7 @@ namespace ConverterHTML
 
                 var SMARTStatus = "UNKN";
 
-                SMARTStatus = SMARTVerdict(comp.GetArrtibPrimaryDriveOrEmpty());
+                SMARTStatus = SMARTVerdict(comp.GetSmartOfPrimaryDriveOrEmpty());
 
                 if (SMARTStatus == "BAD") smartcolor = "#FF2F2F";
                 if (SMARTStatus == "WARN") smartcolor = "#FFFF00";
@@ -589,7 +589,7 @@ namespace ConverterHTML
             var PrinterSvod = GenList.SelectMany(t => t.Printers, (comp, t) => new KeyValuePair<string, General>(t.Name, comp));
             GroupGen(Path.Combine(path, @"html\SvodPrinter.htm"), "Группировка по принтера", PrinterSvod, "../source/printer.png");
 
-            var SMARTSvod = GenList.GroupBy(t => SMARTVerdict(t.GetArrtibPrimaryDriveOrEmpty()));
+            var SMARTSvod = GenList.GroupBy(t => SMARTVerdict(t.GetSmartOfPrimaryDriveOrEmpty()));
             GroupGen(Path.Combine(path, @"html\SvodSMART.htm"), "Группировка по SMART", SMARTSvod, "../source/SMART.png");
 
             Thread.Sleep(1000);
@@ -662,7 +662,7 @@ namespace ConverterHTML
 
                     var SMARTStatus = "UNKN";
 
-                    SMARTStatus = SMARTVerdict(comp.GetArrtibPrimaryDriveOrEmpty());
+                    SMARTStatus = SMARTVerdict(comp.GetSmartOfPrimaryDriveOrEmpty());
 
                     if (SMARTStatus == "BAD") smartcolor = "#FF2F2F";
                     if (SMARTStatus == "WARN") smartcolor = "#FFFF00";

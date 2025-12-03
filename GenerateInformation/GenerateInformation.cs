@@ -2,15 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.DirectoryServices;
 using System.Linq;
 using System.Management;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.ServiceProcess;
 using System.Text.RegularExpressions;
 using GenerateInformation.GenInfo;
 using Microsoft.Win32;
+using System.DirectoryServices;
+using System.ServiceProcess;
+using GenerateInformation.DeviceCollectors.Windows.VersionCollector;
 
 namespace GenerateInformation
 {
@@ -28,7 +29,7 @@ namespace GenerateInformation
             information.IsVirtualMachine = IsVirtualMachine();
             information.UserName = Getuser();
             information.LoginAsAdministrator = Loginasadmin();
-            information.WinVersion = GetWinVer();
+            information.WinVersion = WindowsVersionCollector.GetOperationSystemTypeString();
 
             InitializeInformation(new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_OperatingSystem"), information)?.AddList(information.Errors);
 
@@ -477,33 +478,6 @@ namespace GenerateInformation
             if (input != null)
                 return input.ToString();
             return string.Empty;
-        }
-
-        public static string GetWinVer()
-        {
-            try
-            {
-                var reg = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-
-                var productName = (string)reg.GetValue("ProductName");
-                return productName;
-            }
-            catch
-            {
-                try
-                {
-                    var win = "";
-
-                    var searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_OperatingSystem");
-
-                    foreach (ManagementObject queryObj in searcher.Get().Cast<ManagementObject>()) win = queryObj["Caption"].ToString();
-                    return win;
-                }
-                catch
-                {
-                    return Environment.OSVersion.ToString();
-                }
-            }
         }
 
         private static string Getuser()
