@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GenerateInformation.GenInfo
 {
@@ -33,15 +34,18 @@ namespace GenerateInformation.GenInfo
         public bool LoginAsAdministrator { get; set; }
         public VideoAdapter VideoAdapter { get; set; }
         public Marks Marks { get; set; }
-        
 
-        public Dictionary<int, Smart> GetArrtibPrimaryDriveOrEmpty()
+
+        public Dictionary<int, Smart> GetSmartOfPrimaryDriveOrEmpty()
         {
-            var primarydrive = Drives.Find(t => t.IsPrimary);
+            if (Drives.Count == 1)
+            {
+                return Drives.First().SmartAttributes;
+            }
 
-            if (primarydrive != null)
-                return primarydrive.SmartAttributes;
-            return new Dictionary<int, Smart>();
+            var primaryDrive = Drives.FirstOrDefault(t => t.IsPrimary);
+
+            return primaryDrive.SmartAttributes ?? new Dictionary<int, Smart>();
         }
 
         public bool IsCorrect()
